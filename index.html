@@ -1,0 +1,1294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Birthday Present</title>
+
+<!-- GOOGLE FONTS (Fredoka = HK-stationery rounded look) -->
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500&family=Playfair+Display&family=Inter:wght@300;400&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --bg: linear-gradient(135deg, #1e1e2f, #2a2a40);
+  --accent: #ff7aa2;
+  --text: #1e1e2f;
+  /* Hello Kitty–style stationery palette (not official assets) */
+  --hk-pink: #ff7eb3;
+  --hk-pink-deep: #ff5a9e;
+  --hk-red: #e31e24;
+  --hk-red-dark: #b81218;
+  --hk-blue: #7ec8e3;
+  --hk-cream: #fffafc;
+}
+
+html, body {
+  height: 100%;
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: Fredoka, system-ui, sans-serif;
+  color: #2b2b2b;
+  overflow: hidden;
+  min-height: 100%;
+  background-color: #ffb8d9;
+  background-image:
+    radial-gradient(circle at 12% 18%, rgba(255, 255, 255, 0.55) 0%, transparent 26%),
+    radial-gradient(circle at 88% 12%, rgba(255, 255, 255, 0.4) 0%, transparent 22%),
+    radial-gradient(circle at 78% 82%, rgba(255, 255, 255, 0.35) 0%, transparent 28%),
+    radial-gradient(circle at 18% 78%, rgba(126, 200, 227, 0.2) 0%, transparent 25%),
+    radial-gradient(ellipse 100% 80% at 50% 100%, #ff9ec7 0%, transparent 55%),
+    radial-gradient(ellipse 90% 70% at 50% 0%, #fff5fb 0%, #ffd8ea 38%, #ffc4dc 72%, #f5a8cc 100%);
+  background-attachment: fixed;
+}
+
+/* SCENES */
+.scene {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  opacity: 0;
+  pointer-events: none;
+  transition: 0.8s ease;
+}
+
+.scene.active {
+  opacity: 1;
+  pointer-events: all;
+}
+
+/* Shared HK “memo card” for intro, cake, envelope, ending */
+.hk-scene-card {
+  position: relative;
+  max-width: min(92vw, 440px);
+  text-align: center;
+  padding: 26px 28px 30px;
+  background: #fff;
+  background-image:
+    radial-gradient(circle at 18% 22%, rgba(255, 182, 214, 0.14) 0%, transparent 42%),
+    radial-gradient(circle at 82% 78%, rgba(126, 200, 227, 0.12) 0%, transparent 40%);
+  border-radius: 22px;
+  box-shadow:
+    0 0 0 3px #fff,
+    0 0 0 7px var(--hk-pink),
+    0 0 0 10px #fff,
+    0 0 0 13px var(--hk-red),
+    0 22px 48px rgba(0, 0, 0, 0.16);
+}
+
+.hk-scene-tape {
+  height: 10px;
+  border-radius: 5px;
+  margin: 0 0 14px;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--hk-red) 0,
+    var(--hk-red) 14px,
+    #fff 14px,
+    #fff 28px,
+    var(--hk-pink) 28px,
+    var(--hk-pink) 42px,
+    #fff 42px,
+    #fff 56px,
+    var(--hk-blue) 56px,
+    var(--hk-blue) 70px,
+    #fff 70px,
+    #fff 84px
+  );
+  box-shadow: 0 2px 0 rgba(227, 30, 36, 0.12);
+}
+
+.hk-scene-bow {
+  display: flex;
+  justify-content: center;
+  margin: -2px 0 8px;
+  pointer-events: none;
+}
+
+.hk-scene-bow svg {
+  width: min(64px, 18vw);
+  height: auto;
+  filter: drop-shadow(0 2px 0 rgba(180, 16, 24, 0.2));
+}
+
+.hk-scene-card h1 {
+  margin: 0 0 10px;
+  font-size: clamp(1.65rem, 5vw, 2.1rem);
+  font-weight: 500;
+  color: var(--hk-red-dark);
+  letter-spacing: 0.02em;
+}
+
+.hk-scene-card > p {
+  margin: 0 0 22px;
+  font-size: 1.05rem;
+  color: #444;
+  line-height: 1.55;
+}
+
+.hk-scene-card p.love {
+  margin: 20px 0 0;
+  font-size: 1.35rem;
+  font-weight: 500;
+  color: var(--hk-red);
+}
+
+.hk-scene-card .envelope {
+  margin: 6px auto 0;
+}
+
+/* Cake scene: sliding puzzle (wider card) */
+.hk-puzzle-card {
+  max-width: min(96vw, 400px);
+}
+
+.cake-puzzle {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  width: min(82vw, 320px);
+  aspect-ratio: 1;
+  margin: 0 auto 12px;
+  padding: 10px;
+  border-radius: 16px;
+  background: linear-gradient(145deg, #fff5f9, #ffe8f0);
+  box-shadow: inset 0 2px 10px rgba(227, 30, 36, 0.08);
+  user-select: none;
+  touch-action: manipulation;
+}
+
+.cake-puzzle__tile {
+  position: relative;
+  border: none;
+  border-radius: 11px;
+  padding: 0;
+  cursor: pointer;
+  overflow: hidden;
+  background-color: #f0ebe6;
+  background-repeat: no-repeat;
+  box-shadow:
+    0 0 0 2px rgba(255, 255, 255, 0.95),
+    0 3px 9px rgba(0, 0, 0, 0.12);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.cake-puzzle__tile:active:not(:disabled) {
+  transform: scale(0.96);
+}
+
+.cake-puzzle__tile:focus-visible {
+  outline: 3px solid var(--hk-blue);
+  outline-offset: 2px;
+}
+
+.cake-puzzle__tile--empty {
+  cursor: default;
+  background: repeating-linear-gradient(
+    -45deg,
+    #ffeef6,
+    #ffeef6 5px,
+    #fff 5px,
+    #fff 10px
+  ) !important;
+  box-shadow: inset 0 0 0 2px rgba(255, 182, 214, 0.5);
+}
+
+.cake-puzzle__tile--empty:active {
+  transform: none;
+}
+
+.cake-puzzle__tile--adjacent {
+  box-shadow:
+    0 0 0 2px rgba(255, 255, 255, 0.95),
+    0 0 0 4px var(--hk-pink),
+    0 0 0 6px var(--hk-red),
+    0 4px 14px rgba(227, 30, 36, 0.2);
+}
+
+.cake-puzzle-instructions {
+  margin: 0 0 14px;
+  text-align: left;
+  align-self: stretch;
+  font-size: clamp(0.95rem, 3.2vw, 1.05rem);
+  line-height: 1.55;
+  color: #333;
+}
+
+.cake-puzzle-instructions__lead {
+  margin: 0 0 12px;
+  font-weight: 600;
+  font-size: 1.06em;
+  line-height: 1.45;
+}
+
+.cake-puzzle-instructions ol {
+  margin: 0;
+  padding-left: 1.35em;
+}
+
+.cake-puzzle-instructions li {
+  margin-bottom: 10px;
+}
+
+.cake-puzzle-instructions li:last-child {
+  margin-bottom: 0;
+}
+
+.cake-puzzle-status {
+  margin: 12px 0 0;
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--hk-red-dark);
+  text-align: center;
+}
+
+.cake-help-btn {
+  margin: 14px auto 2px;
+  display: block;
+  padding: 11px 24px;
+  border-radius: 999px;
+  border: 3px solid var(--hk-pink);
+  background: #fff;
+  color: var(--hk-red-dark);
+  font-family: Fredoka, system-ui, sans-serif;
+  font-weight: 500;
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  box-shadow: 0 2px 0 rgba(227, 30, 36, 0.12);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.cake-help-btn:hover:not(:disabled) {
+  transform: scale(1.04);
+  background: #fff5f9;
+  box-shadow: 0 4px 12px rgba(255, 122, 179, 0.25);
+}
+
+.cake-help-btn:disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
+}
+
+.cake-puzzle-win {
+  margin-top: 12px;
+  padding: 10px 16px;
+  border-radius: 14px;
+  font-size: 1.15rem;
+  font-weight: 500;
+  color: var(--hk-red-dark);
+  background: linear-gradient(180deg, #fff8fb, #ffe4f0);
+  box-shadow: 0 0 0 2px var(--hk-pink);
+  opacity: 0;
+  transform: scale(0.92);
+  transition: opacity 0.35s ease, transform 0.35s ease;
+  pointer-events: none;
+}
+
+.cake-puzzle-win.is-visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.cake-puzzle.is-locked .cake-puzzle__tile:not(.cake-puzzle__tile--empty) {
+  cursor: default;
+  pointer-events: none;
+}
+
+/* Scene backdrops (paper / photo keep their own) */
+#start,
+#cakeScene,
+#envelopeScene,
+#endScene {
+  background: radial-gradient(ellipse 120% 85% at 50% 45%, rgba(255, 251, 252, 0.95) 0%, #ffd8e8 50%, #ffc4dc 100%);
+}
+
+button {
+  padding: 13px 32px;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  font-family: Fredoka, system-ui, sans-serif;
+  font-weight: 500;
+  font-size: 1rem;
+  letter-spacing: 0.04em;
+  color: #fff;
+  background: linear-gradient(180deg, var(--hk-red) 0%, var(--hk-red-dark) 100%);
+  box-shadow: 0 4px 0 var(--hk-red-dark), 0 8px 20px rgba(227, 30, 36, 0.32);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+button:hover {
+  transform: scale(1.06) translateY(-1px);
+  box-shadow: 0 5px 0 var(--hk-red-dark), 0 10px 26px rgba(227, 30, 36, 0.38);
+}
+
+button:active {
+  transform: scale(1.02) translateY(2px);
+  box-shadow: 0 2px 0 var(--hk-red-dark), 0 4px 14px rgba(227, 30, 36, 0.28);
+}
+
+/* ENVELOPE — match HK memo colors */
+.envelope {
+  width: 240px;
+  height: 150px;
+  background-color: var(--hk-pink-deep);
+  background-image: radial-gradient(circle at 50% 50%, #fff 2px, transparent 2.1px);
+  background-size: 12px 12px;
+  border-radius: 10px;
+  position: relative;
+  cursor: pointer;
+  box-shadow: 0 0 0 3px #fff, 0 0 0 5px var(--hk-red), 0 12px 28px rgba(227, 30, 36, 0.25);
+}
+
+.flap {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(160deg, var(--hk-red) 0%, var(--hk-red-dark) 100%);
+  clip-path: polygon(0 0, 50% 55%, 100% 0);
+  transform-origin: top;
+  transition: 0.6s;
+}
+
+.envelope.open .flap {
+  transform: rotateX(180deg);
+}
+
+/* PAPER — Hello Kitty–style note (pink dots, red bows, white center) */
+.paper {
+  position: absolute;
+  width: 75%;
+  max-width: 920px;
+  height: 75%;
+  background: var(--hk-cream);
+  color: #2b2b2b;
+  border-radius: 14px;
+  padding: 0;
+  display: flex;
+  flex-direction: row;
+  overflow: hidden;
+  transform: scale(0.8);
+  opacity: 0;
+  transition: 0.6s;
+  box-shadow:
+    0 0 0 3px #fff,
+    0 0 0 7px var(--hk-pink),
+    0 0 0 10px #fff,
+    0 0 0 13px var(--hk-red),
+    0 24px 48px rgba(0,0,0,0.35);
+}
+
+.paper.show {
+  transform: scale(1);
+  opacity: 1;
+}
+
+/* Side rails: classic “pink with white dots” HK wrapping paper */
+.paper-rail {
+  flex: 0 0 58px;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-evenly;
+  padding: 16px 0;
+  box-sizing: border-box;
+  background-color: var(--hk-pink-deep);
+  background-image: radial-gradient(circle at 50% 50%, #fff 2.2px, transparent 2.3px);
+  background-size: 14px 14px;
+}
+
+.paper-rail-left {
+  border-right: 3px solid var(--hk-red);
+  box-shadow: inset -8px 0 0 rgba(255, 255, 255, 0.12);
+}
+
+.paper-rail-right {
+  border-left: 3px solid var(--hk-red);
+  box-shadow: inset 8px 0 0 rgba(255, 255, 255, 0.12);
+}
+
+.paper-rail .decor {
+  flex-shrink: 0;
+  opacity: 1;
+  filter: drop-shadow(0 2px 0 rgba(0, 0, 0, 0.08));
+}
+
+.paper-inner {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 36px 26px 40px;
+  background-color: #fff;
+  background-image:
+    radial-gradient(circle at 20% 30%, rgba(255, 182, 214, 0.12) 0%, transparent 45%),
+    radial-gradient(circle at 80% 70%, rgba(126, 200, 227, 0.1) 0%, transparent 40%);
+  position: relative;
+}
+
+/* Candy stripe “tape” like HK stationery borders */
+.paper-inner::before {
+  content: "";
+  display: block;
+  height: 10px;
+  border-radius: 5px;
+  margin-bottom: 18px;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--hk-red) 0,
+    var(--hk-red) 14px,
+    #fff 14px,
+    #fff 28px,
+    var(--hk-pink) 28px,
+    var(--hk-pink) 42px,
+    #fff 42px,
+    #fff 56px,
+    var(--hk-blue) 56px,
+    var(--hk-blue) 70px,
+    #fff 70px,
+    #fff 84px
+  );
+  box-shadow: 0 2px 0 rgba(227, 30, 36, 0.15);
+}
+
+.paper .close-btn {
+  background: linear-gradient(180deg, var(--hk-red) 0%, var(--hk-red-dark) 100%);
+  color: #fff;
+  font-family: Fredoka, system-ui, sans-serif;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  box-shadow: 0 4px 0 var(--hk-red-dark), 0 6px 14px rgba(227, 30, 36, 0.35);
+}
+
+.paper .close-btn:hover {
+  transform: scale(1.05) translateY(-1px);
+}
+
+/* Big bow + bottom stripe — classic HK “gift note” layout */
+.paper-mega-bow {
+  display: flex;
+  justify-content: center;
+  margin: -4px 0 10px;
+  flex-shrink: 0;
+}
+
+.paper-mega-bow svg {
+  width: min(88px, 22vw);
+  height: auto;
+  filter: drop-shadow(0 3px 0 rgba(180, 16, 24, 0.22));
+}
+
+.paper-strip-bottom {
+  flex-shrink: 0;
+  height: 8px;
+  border-radius: 4px;
+  margin-top: 14px;
+  margin-bottom: 4px;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--hk-blue) 0,
+    var(--hk-blue) 12px,
+    #fff 12px,
+    #fff 24px,
+    var(--hk-pink) 24px,
+    var(--hk-pink) 36px,
+    #fff 36px,
+    #fff 48px,
+    var(--hk-red) 48px,
+    var(--hk-red) 60px,
+    #fff 60px,
+    #fff 72px
+  );
+  opacity: 0.95;
+  box-shadow: 0 2px 0 rgba(227, 30, 36, 0.12);
+}
+
+@media (max-width: 520px) {
+  .hk-scene-card {
+    padding: 22px 18px 26px;
+    max-width: 94vw;
+    border-radius: 18px;
+  }
+
+  .paper-rail {
+    flex-basis: 40px;
+    background-size: 11px 11px;
+  }
+  .paper-rail .decor {
+    transform: scale(0.82);
+  }
+  .paper-inner {
+    padding: 28px 14px 32px;
+  }
+
+  .cake-puzzle {
+    width: min(88vw, 300px);
+    gap: 5px;
+    padding: 8px;
+  }
+}
+
+/* LETTER — rounded “character goods” note style */
+#letterText {
+  flex: 1;
+  overflow-y: auto;
+  line-height: 1.85;
+  font-size: 16px;
+  max-width: 750px;
+  margin: auto;
+  font-family: Fredoka, system-ui, sans-serif;
+  font-weight: 400;
+}
+
+#letterText p {
+  margin-bottom: 22px;
+}
+
+/* CLOSE BUTTON */
+.close-btn {
+  margin-top: 10px;
+  align-self: center;
+}
+
+/* Paper scene: soft “character goods” backdrop */
+#paperScene {
+  background: radial-gradient(ellipse 120% 80% at 50% 45%, #fff7fb 0%, #ffd8e8 55%, #ffc4dc 100%);
+}
+
+#photoScene {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: radial-gradient(ellipse 120% 90% at 50% 45%, #fff7fb 0%, #ffd8e8 50%, #ffc4dc 100%);
+}
+
+
+/* Hello Kitty–style frame: shows/hides with the photo (same JS class) */
+.photo-showcase {
+  position: relative;
+  align-self: center;
+  width: max-content;
+  max-width: 100%;
+  opacity: 0;
+  transform: scale(0.88);
+  transition: opacity 1s ease, transform 1s ease;
+  pointer-events: none;
+}
+
+.photo-showcase.show {
+  opacity: 1;
+  transform: scale(1.05);
+  pointer-events: auto;
+}
+
+.photo-hk-bow-overlap {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  z-index: 2;
+  transform: translate(-50%, -48%);
+  pointer-events: none;
+  filter: drop-shadow(0 3px 0 rgba(180, 16, 24, 0.2));
+}
+
+.photo-hk-bow-overlap svg {
+  width: min(76px, 18vw);
+  height: auto;
+  display: block;
+}
+
+.photo-hk-mat {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
+  background-color: var(--hk-pink-deep);
+  background-image: radial-gradient(circle at 50% 50%, #fff 2px, transparent 2.1px);
+  background-size: 14px 14px;
+  padding: 20px 22px 22px;
+  border-radius: 26px;
+  box-shadow:
+    0 0 0 4px #fff,
+    0 0 0 8px var(--hk-pink),
+    0 0 0 11px #fff,
+    0 0 0 14px var(--hk-red),
+    0 22px 55px rgba(0, 0, 0, 0.32);
+}
+
+.photo-hk-tape {
+  height: 9px;
+  border-radius: 5px;
+  flex-shrink: 0;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--hk-red) 0,
+    var(--hk-red) 14px,
+    #fff 14px,
+    #fff 28px,
+    var(--hk-pink) 28px,
+    var(--hk-pink) 42px,
+    #fff 42px,
+    #fff 56px,
+    var(--hk-blue) 56px,
+    var(--hk-blue) 70px,
+    #fff 70px,
+    #fff 84px
+  );
+  box-shadow: 0 1px 0 rgba(227, 30, 36, 0.12);
+}
+
+.photo-hk-tape--bottom {
+  background: repeating-linear-gradient(
+    90deg,
+    var(--hk-blue) 0,
+    var(--hk-blue) 12px,
+    #fff 12px,
+    #fff 24px,
+    var(--hk-pink) 24px,
+    var(--hk-pink) 36px,
+    #fff 36px,
+    #fff 48px,
+    var(--hk-red) 48px,
+    var(--hk-red) 60px,
+    #fff 60px,
+    #fff 72px
+  );
+}
+
+.photo-hk-white {
+  background: #fff;
+  padding: 10px;
+  border-radius: 16px;
+  box-shadow: inset 0 0 0 1px rgba(255, 182, 214, 0.5);
+}
+
+#photoShowcase #finalPhoto {
+  display: block;
+  width: min(72vw, 560px);
+  max-width: 100%;
+  height: auto;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+}
+
+.photo-hk-float {
+  position: absolute;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.9;
+}
+
+.photo-hk-float--l {
+  left: 0;
+  top: 42%;
+  transform: translate(-40%, -50%) rotate(-12deg);
+}
+
+.photo-hk-float--r {
+  right: 0;
+  top: 58%;
+  transform: translate(40%, -50%) rotate(12deg);
+}
+
+@media (max-width: 520px) {
+  .photo-hk-mat {
+    padding: 14px 14px 16px;
+    gap: 10px;
+    border-radius: 20px;
+  }
+  .photo-hk-float--l,
+  .photo-hk-float--r {
+    display: none;
+  }
+}
+
+/* FINAL MESSAGE — same HK card language + entrance */
+.final-message {
+  position: relative;
+  text-align: center;
+  font-size: clamp(1.15rem, 3.8vw, 1.55rem);
+  line-height: 1.55;
+  opacity: 0;
+  transform: translateY(16px) scale(0.96);
+  transition: opacity 0.85s ease, transform 0.85s ease;
+}
+
+.final-message.show {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.final-message > p:first-of-type {
+  margin-top: 0;
+  color: #333;
+  font-weight: 500;
+}
+
+.hk-scene-tape--footer {
+  margin: 18px 0 0;
+  height: 8px;
+  opacity: 0.95;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--hk-blue) 0,
+    var(--hk-blue) 12px,
+    #fff 12px,
+    #fff 24px,
+    var(--hk-pink) 24px,
+    var(--hk-pink) 36px,
+    #fff 36px,
+    #fff 48px,
+    var(--hk-red) 48px,
+    var(--hk-red) 60px,
+    #fff 60px,
+    #fff 72px
+  );
+}
+
+/* SIGNATURE (bottom right, very close) */
+.signature {
+  display: block;
+  font-size: 0.82rem;
+  opacity: 0.75;
+  text-align: right;
+  margin-top: 6px;
+  padding-right: 6px;
+  color: var(--hk-red-dark);
+}
+
+/* I LOVE YOU TEXT (card variant uses .hk-scene-card p.love) */
+.love {
+  margin-top: 18px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="scene active" id="start">
+  <div class="hk-scene-card">
+    <div class="hk-scene-tape" aria-hidden="true"></div>
+    <div class="hk-scene-bow" aria-hidden="true">
+      <svg viewBox="0 0 72 48" xmlns="http://www.w3.org/2000/svg"><ellipse cx="22" cy="24" rx="20" ry="18" fill="#e31e24"/><ellipse cx="50" cy="24" rx="20" ry="18" fill="#e31e24"/><rect x="33" y="14" width="6" height="18" rx="2" fill="#9a0a12"/><ellipse cx="36" cy="24" rx="9" ry="8" fill="#ff6b6b"/></svg>
+    </div>
+    <h1>Happy Birthday!</h1>
+    <p>I made something for you...</p>
+    <button type="button" onclick="next('cake')">Start</button>
+  </div>
+</div>
+
+<div class="scene" id="cakeScene">
+  <div class="hk-scene-card hk-puzzle-card">
+    <div class="hk-scene-tape" aria-hidden="true"></div>
+    <div class="hk-scene-bow" aria-hidden="true">
+      <svg viewBox="0 0 72 48" xmlns="http://www.w3.org/2000/svg"><ellipse cx="22" cy="24" rx="20" ry="18" fill="#e31e24"/><ellipse cx="50" cy="24" rx="20" ry="18" fill="#e31e24"/><rect x="33" y="14" width="6" height="18" rx="2" fill="#9a0a12"/><ellipse cx="36" cy="24" rx="9" ry="8" fill="#ff6b6b"/></svg>
+    </div>
+    <div class="cake-puzzle-instructions">
+      <p class="cake-puzzle-instructions__lead">Put the cake picture back together.</p>
+      <ol>
+        <li>Find the <strong>empty</strong> square. It has light stripes. There is no cake photo there.</li>
+        <li>Tap a <strong>cake</strong> square that is right beside the empty square (above, below, left, or right).</li>
+        <li>If a cake square has a <strong>pink and red border</strong>, you can tap that square.</li>
+        <li>Or tap <strong>Help</strong> below the puzzle. One correct piece will move for you.</li>
+      </ol>
+    </div>
+    <div id="cakePuzzle" class="cake-puzzle" role="group" aria-label="Birthday cake sliding puzzle, eight pieces"></div>
+    <button type="button" class="cake-help-btn" id="cakeHelpBtn">Help — move one piece for me</button>
+    <p id="cakePuzzleHint" class="cake-puzzle-status" hidden aria-live="polite"></p>
+    <div id="cakePuzzleWin" class="cake-puzzle-win" aria-live="polite" hidden>Perfect — you fixed it!</div>
+  </div>
+</div>
+
+<div class="scene" id="envelopeScene">
+  <div class="hk-scene-card">
+    <div class="hk-scene-tape" aria-hidden="true"></div>
+    <div class="hk-scene-bow" aria-hidden="true">
+      <svg viewBox="0 0 72 48" xmlns="http://www.w3.org/2000/svg"><ellipse cx="22" cy="24" rx="20" ry="18" fill="#e31e24"/><ellipse cx="50" cy="24" rx="20" ry="18" fill="#e31e24"/><rect x="33" y="14" width="6" height="18" rx="2" fill="#9a0a12"/><ellipse cx="36" cy="24" rx="9" ry="8" fill="#ff6b6b"/></svg>
+    </div>
+    <p>Open the envelope</p>
+    <div class="envelope" id="env" onclick="openEnvelope()">
+      <div class="flap"></div>
+    </div>
+  </div>
+</div>
+
+<div class="scene" id="paperScene">
+  <div class="paper" id="paper">
+    <div class="paper-rail paper-rail-left" aria-hidden="true">
+      <!-- HK-inspired icons: bows, apple, daisy (original art — not Sanrio’s character) -->
+      <svg class="decor" viewBox="0 0 40 28" width="30" height="21" xmlns="http://www.w3.org/2000/svg"><ellipse cx="12" cy="14" rx="11" ry="10" fill="#e31e24"/><ellipse cx="28" cy="14" rx="11" ry="10" fill="#e31e24"/><rect x="18" y="9" width="4" height="10" rx="1" fill="#b01010"/><ellipse cx="20" cy="14" rx="5" ry="4.5" fill="#ff6b6b"/></svg>
+      <svg class="decor" viewBox="0 0 24 26" width="22" height="24" xmlns="http://www.w3.org/2000/svg"><path fill="#e31e24" d="M12 22C7 18 4 14 4 10a4 4 0 018 0 4 4 0 018 0c0 4-3 8-8 12z"/><path fill="#6ab04c" d="M12 6q3-4 6-1-2 3-6 1z"/></svg>
+      <svg class="decor" viewBox="0 0 40 28" width="30" height="21" xmlns="http://www.w3.org/2000/svg"><ellipse cx="12" cy="14" rx="11" ry="10" fill="#e31e24"/><ellipse cx="28" cy="14" rx="11" ry="10" fill="#e31e24"/><rect x="18" y="9" width="4" height="10" rx="1" fill="#b01010"/><ellipse cx="20" cy="14" rx="5" ry="4.5" fill="#ff6b6b"/></svg>
+      <svg class="decor" viewBox="0 0 28 28" width="24" height="24" xmlns="http://www.w3.org/2000/svg"><circle cx="14" cy="14" r="4" fill="#ffe066"/><g fill="#fff" stroke="#e31e24" stroke-width="1.2"><ellipse cx="14" cy="8" rx="4" ry="6"/><ellipse cx="8" cy="14" rx="4" ry="6"/><ellipse cx="20" cy="14" rx="4" ry="6"/><ellipse cx="14" cy="20" rx="4" ry="6"/></g></svg>
+      <svg class="decor" viewBox="0 0 24 20" width="20" height="17" xmlns="http://www.w3.org/2000/svg"><path fill="#ff7eb3" stroke="#e31e24" stroke-width="0.8" d="M12 18S3 11 3 6a4 4 0 018 0 4 4 0 018 0c0 5-9 12-9 12z"/></svg>
+      <svg class="decor" viewBox="0 0 40 28" width="30" height="21" xmlns="http://www.w3.org/2000/svg"><ellipse cx="12" cy="14" rx="11" ry="10" fill="#e31e24"/><ellipse cx="28" cy="14" rx="11" ry="10" fill="#e31e24"/><rect x="18" y="9" width="4" height="10" rx="1" fill="#b01010"/><ellipse cx="20" cy="14" rx="5" ry="4.5" fill="#ff6b6b"/></svg>
+    </div>
+    <div class="paper-inner">
+      <div class="paper-mega-bow" aria-hidden="true">
+        <svg viewBox="0 0 72 48" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <ellipse cx="22" cy="24" rx="20" ry="18" fill="#e31e24"/>
+          <ellipse cx="50" cy="24" rx="20" ry="18" fill="#e31e24"/>
+          <rect x="33" y="14" width="6" height="18" rx="2" fill="#9a0a12"/>
+          <ellipse cx="36" cy="24" rx="9" ry="8" fill="#ff6b6b"/>
+          <path fill="#fff" fill-opacity="0.35" d="M16 18c6-4 14-3 18 2-5 2-12 1-18-2zM44 18c6-4 14-3 18 2-5 2-12 1-18-2z"/>
+        </svg>
+      </div>
+      <div id="letterText"></div>
+      <div class="paper-strip-bottom" aria-hidden="true"></div>
+      <button class="close-btn" onclick="closeLetter()">Close</button>
+    </div>
+    <div class="paper-rail paper-rail-right" aria-hidden="true">
+      <svg class="decor" viewBox="0 0 24 20" width="20" height="17" xmlns="http://www.w3.org/2000/svg"><path fill="#ff7eb3" stroke="#e31e24" stroke-width="0.8" d="M12 18S3 11 3 6a4 4 0 018 0 4 4 0 018 0c0 5-9 12-9 12z"/></svg>
+      <svg class="decor" viewBox="0 0 40 28" width="30" height="21" xmlns="http://www.w3.org/2000/svg"><ellipse cx="12" cy="14" rx="11" ry="10" fill="#e31e24"/><ellipse cx="28" cy="14" rx="11" ry="10" fill="#e31e24"/><rect x="18" y="9" width="4" height="10" rx="1" fill="#b01010"/><ellipse cx="20" cy="14" rx="5" ry="4.5" fill="#ff6b6b"/></svg>
+      <svg class="decor" viewBox="0 0 28 28" width="24" height="24" xmlns="http://www.w3.org/2000/svg"><circle cx="14" cy="14" r="4" fill="#ffe066"/><g fill="#fff" stroke="#e31e24" stroke-width="1.2"><ellipse cx="14" cy="8" rx="4" ry="6"/><ellipse cx="8" cy="14" rx="4" ry="6"/><ellipse cx="20" cy="14" rx="4" ry="6"/><ellipse cx="14" cy="20" rx="4" ry="6"/></g></svg>
+      <svg class="decor" viewBox="0 0 24 26" width="22" height="24" xmlns="http://www.w3.org/2000/svg"><path fill="#e31e24" d="M12 22C7 18 4 14 4 10a4 4 0 018 0 4 4 0 018 0c0 4-3 8-8 12z"/><path fill="#6ab04c" d="M12 6q3-4 6-1-2 3-6 1z"/></svg>
+      <svg class="decor" viewBox="0 0 40 28" width="30" height="21" xmlns="http://www.w3.org/2000/svg"><ellipse cx="12" cy="14" rx="11" ry="10" fill="#e31e24"/><ellipse cx="28" cy="14" rx="11" ry="10" fill="#e31e24"/><rect x="18" y="9" width="4" height="10" rx="1" fill="#b01010"/><ellipse cx="20" cy="14" rx="5" ry="4.5" fill="#ff6b6b"/></svg>
+      <svg class="decor" viewBox="0 0 24 24" width="20" height="20" xmlns="http://www.w3.org/2000/svg"><path fill="#7ec8e3" stroke="#3aa8cf" stroke-width="1" d="M12 3l2.5 5.5L20 10l-5 3 1.5 6.5L12 16l-4.5 4L9 13 4 10l5.5-1.5z"/></svg>
+      <svg class="decor" viewBox="0 0 40 28" width="30" height="21" xmlns="http://www.w3.org/2000/svg"><ellipse cx="12" cy="14" rx="11" ry="10" fill="#e31e24"/><ellipse cx="28" cy="14" rx="11" ry="10" fill="#e31e24"/><rect x="18" y="9" width="4" height="10" rx="1" fill="#b01010"/><ellipse cx="20" cy="14" rx="5" ry="4.5" fill="#ff6b6b"/></svg>
+    </div>
+  </div>
+</div>
+
+<div class="scene" id="photoScene">
+  <div class="photo-showcase" id="photoShowcase">
+    <div class="photo-hk-float photo-hk-float--l" aria-hidden="true">
+      <svg width="34" height="34" viewBox="0 0 28 28" xmlns="http://www.w3.org/2000/svg"><circle cx="14" cy="14" r="4" fill="#ffe066"/><g fill="#fff" stroke="#e31e24" stroke-width="1.2"><ellipse cx="14" cy="8" rx="4" ry="6"/><ellipse cx="8" cy="14" rx="4" ry="6"/><ellipse cx="20" cy="14" rx="4" ry="6"/><ellipse cx="14" cy="20" rx="4" ry="6"/></g></svg>
+    </div>
+    <div class="photo-hk-float photo-hk-float--r" aria-hidden="true">
+      <svg width="30" height="26" viewBox="0 0 24 26" xmlns="http://www.w3.org/2000/svg"><path fill="#e31e24" d="M12 22C7 18 4 14 4 10a4 4 0 018 0 4 4 0 018 0c0 4-3 8-8 12z"/><path fill="#6ab04c" d="M12 6q3-4 6-1-2 3-6 1z"/></svg>
+    </div>
+    <div class="photo-hk-bow-overlap" aria-hidden="true">
+      <svg viewBox="0 0 72 48" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <ellipse cx="22" cy="24" rx="20" ry="18" fill="#e31e24"/>
+        <ellipse cx="50" cy="24" rx="20" ry="18" fill="#e31e24"/>
+        <rect x="33" y="14" width="6" height="18" rx="2" fill="#9a0a12"/>
+        <ellipse cx="36" cy="24" rx="9" ry="8" fill="#ff6b6b"/>
+      </svg>
+    </div>
+    <div class="photo-hk-mat">
+      <div class="photo-hk-tape" aria-hidden="true"></div>
+      <div class="photo-hk-white">
+        <img src="us.jpg" id="finalPhoto" alt="Our photo">
+      </div>
+      <div class="photo-hk-tape photo-hk-tape--bottom" aria-hidden="true"></div>
+    </div>
+  </div>
+</div>
+
+<div class="scene" id="endScene">
+  <div class="final-message hk-scene-card" id="finalMessage">
+    <div class="hk-scene-tape" aria-hidden="true"></div>
+    <div class="hk-scene-bow" aria-hidden="true">
+      <svg viewBox="0 0 72 48" xmlns="http://www.w3.org/2000/svg"><ellipse cx="22" cy="24" rx="20" ry="18" fill="#e31e24"/><ellipse cx="50" cy="24" rx="20" ry="18" fill="#e31e24"/><rect x="33" y="14" width="6" height="18" rx="2" fill="#9a0a12"/><ellipse cx="36" cy="24" rx="9" ry="8" fill="#ff6b6b"/></svg>
+    </div>
+    <p>No matter the distance, I’m always here for you.</p>
+    <span class="signature">With love, Adrian</span>
+    <p class="love">I love you...</p>
+    <div class="hk-scene-tape hk-scene-tape--footer" aria-hidden="true"></div>
+  </div>
+</div>
+
+<script>
+function next(scene){
+  document.querySelectorAll('.scene').forEach(s=>s.classList.remove('active'));
+  document.getElementById(scene+'Scene').classList.add('active');
+  if (scene === 'cake') initCakePuzzle();
+}
+
+/* 3×3 sliding puzzle — realistic photo (Unsplash). Put cake.jpg next to index.html to use your own picture. */
+const CAKE_GRID = 3;
+const CAKE_SIZE = 9;
+/* Fewer moves = starts closer to solved (easier). Raise if you want it harder. */
+const CAKE_SHUFFLE_MOVES = 22;
+
+/* Realistic chocolate cake + berries — strong top/middle/bottom so tiles are easier to place */
+const CAKE_IMAGE_REMOTE =
+  'https://images.unsplash.com/photo-1621303837174-89787a7d4729?auto=format&fit=crop&w=900&h=900&q=85';
+
+let cakePuzzleUrl = CAKE_IMAGE_REMOTE;
+
+const CAKE_SOLVED = [1, 2, 3, 4, 5, 6, 7, 8, 0];
+let cakeState = null;
+let cakeLocked = false;
+
+function cakeEmptyIndex(state) {
+  return state.indexOf(0);
+}
+
+function cakeAdjacent(a, b) {
+  const ar = Math.floor(a / CAKE_GRID), ac = a % CAKE_GRID;
+  const br = Math.floor(b / CAKE_GRID), bc = b % CAKE_GRID;
+  return Math.abs(ar - br) + Math.abs(ac - bc) === 1;
+}
+
+function cakeNeighborIndices(empty) {
+  const er = Math.floor(empty / CAKE_GRID), ec = empty % CAKE_GRID;
+  const out = [];
+  if (er > 0) out.push(empty - CAKE_GRID);
+  if (er < CAKE_GRID - 1) out.push(empty + CAKE_GRID);
+  if (ec > 0) out.push(empty - 1);
+  if (ec < CAKE_GRID - 1) out.push(empty + 1);
+  return out;
+}
+
+/** One shortest-step move closer to the solved layout (BFS). */
+function cakeBfsFirstStepTowardSolved(start) {
+  const goalKey = CAKE_SOLVED.join(',');
+  const startKey = start.join(',');
+  if (startKey === goalKey) return null;
+
+  const queue = [];
+  const visited = new Set();
+  const parentKey = new Map();
+  const stateByKey = new Map();
+
+  queue.push(start);
+  visited.add(startKey);
+  parentKey.set(startKey, null);
+  stateByKey.set(startKey, start);
+
+  while (queue.length) {
+    const cur = queue.shift();
+    const empty = cur.indexOf(0);
+    for (const ni of cakeNeighborIndices(empty)) {
+      const next = cur.slice();
+      next[empty] = next[ni];
+      next[ni] = 0;
+      const nk = next.join(',');
+      if (visited.has(nk)) continue;
+      visited.add(nk);
+      parentKey.set(nk, cur.join(','));
+      stateByKey.set(nk, next);
+      queue.push(next);
+      if (nk === goalKey) {
+        const chain = [];
+        let k = goalKey;
+        while (true) {
+          chain.push(stateByKey.get(k));
+          const pk = parentKey.get(k);
+          if (pk === null) break;
+          k = pk;
+        }
+        chain.reverse();
+        return chain.length > 1 ? chain[1] : null;
+      }
+    }
+  }
+  return null;
+}
+
+function cakeCheckWinAfterMove() {
+  if (!cakeIsSolved(cakeState)) return false;
+  cakeLocked = true;
+  const winEl = document.getElementById('cakePuzzleWin');
+  winEl.hidden = false;
+  requestAnimationFrame(function () {
+    winEl.classList.add('is-visible');
+  });
+  setTimeout(function () {
+    next('envelope');
+  }, 1100);
+  return true;
+}
+
+function cakeApplyOneHelpStep() {
+  if (cakeLocked || !cakeState || cakeIsSolved(cakeState)) return;
+  const next = cakeBfsFirstStepTowardSolved(cakeState);
+  if (!next) return;
+  cakeState = next;
+  renderCakePuzzle();
+  cakeCheckWinAfterMove();
+}
+
+function onCakeHelpClick() {
+  cakeApplyOneHelpStep();
+}
+
+function cakeShuffle() {
+  const s = CAKE_SOLVED.slice();
+  let empty = cakeEmptyIndex(s);
+  for (let n = 0; n < CAKE_SHUFFLE_MOVES; n++) {
+    const neighbors = [];
+    const er = Math.floor(empty / CAKE_GRID), ec = empty % CAKE_GRID;
+    if (er > 0) neighbors.push(empty - CAKE_GRID);
+    if (er < CAKE_GRID - 1) neighbors.push(empty + CAKE_GRID);
+    if (ec > 0) neighbors.push(empty - 1);
+    if (ec < CAKE_GRID - 1) neighbors.push(empty + 1);
+    const pick = neighbors[Math.floor(Math.random() * neighbors.length)];
+    s[empty] = s[pick];
+    s[pick] = 0;
+    empty = pick;
+  }
+  return s;
+}
+
+function cakeIsSolved(state) {
+  return state.every((v, i) => v === CAKE_SOLVED[i]);
+}
+
+function cakePieceBg(piece) {
+  if (piece <= 0) return null;
+  const i = piece - 1;
+  const col = i % CAKE_GRID;
+  const row = Math.floor(i / CAKE_GRID);
+  return {
+    image: cakePuzzleUrl,
+    position: col * 50 + '% ' + row * 50 + '%',
+  };
+}
+
+function renderCakePuzzle() {
+  const board = document.getElementById('cakePuzzle');
+  const hint = document.getElementById('cakePuzzleHint');
+  const helpBtn = document.getElementById('cakeHelpBtn');
+  const winEl = document.getElementById('cakePuzzleWin');
+  if (!board || !cakeState) return;
+
+  winEl.classList.remove('is-visible');
+  winEl.hidden = true;
+  board.classList.toggle('is-locked', cakeLocked);
+  board.innerHTML = '';
+
+  const emptyIdx = cakeEmptyIndex(cakeState);
+
+  for (let i = 0; i < CAKE_SIZE; i++) {
+    const piece = cakeState[i];
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'cake-puzzle__tile';
+    btn.dataset.index = String(i);
+
+    if (piece === 0) {
+      btn.classList.add('cake-puzzle__tile--empty');
+      btn.setAttribute('aria-label', 'Empty square with stripes, no cake photo');
+      btn.disabled = true;
+    } else {
+      const bg = cakePieceBg(piece);
+      btn.style.backgroundImage = 'url("' + bg.image + '")';
+      btn.style.backgroundSize = CAKE_GRID * 100 + '% ' + CAKE_GRID * 100 + '%';
+      btn.style.backgroundPosition = bg.position;
+      btn.setAttribute('aria-label', 'Puzzle piece ' + piece);
+      btn.disabled = cakeLocked;
+      if (!cakeLocked && cakeAdjacent(i, emptyIdx)) {
+        btn.classList.add('cake-puzzle__tile--adjacent');
+      }
+    }
+    board.appendChild(btn);
+  }
+
+  if (hint) {
+    if (cakeLocked) {
+      hint.hidden = false;
+      hint.textContent = 'Opening the next part…';
+    } else {
+      hint.hidden = true;
+      hint.textContent = '';
+    }
+  }
+
+  if (helpBtn) {
+    helpBtn.disabled = cakeLocked || cakeIsSolved(cakeState);
+  }
+}
+
+function onCakePuzzleTap(e) {
+  if (cakeLocked || !cakeState) return;
+  const btn = e.target.closest('.cake-puzzle__tile');
+  if (!btn || btn.classList.contains('cake-puzzle__tile--empty')) return;
+
+  const i = parseInt(btn.dataset.index, 10);
+  const empty = cakeEmptyIndex(cakeState);
+  if (!cakeAdjacent(i, empty)) return;
+
+  cakeState[empty] = cakeState[i];
+  cakeState[i] = 0;
+  renderCakePuzzle();
+  cakeCheckWinAfterMove();
+}
+
+function initCakePuzzle() {
+  const board = document.getElementById('cakePuzzle');
+  if (!board) return;
+
+  board.removeEventListener('click', onCakePuzzleTap);
+  const helpBtn = document.getElementById('cakeHelpBtn');
+  if (helpBtn) {
+    helpBtn.removeEventListener('click', onCakeHelpClick);
+  }
+
+  function startPuzzle() {
+    cakeLocked = false;
+    do {
+      cakeState = cakeShuffle();
+    } while (cakeIsSolved(cakeState));
+    board.addEventListener('click', onCakePuzzleTap);
+    if (helpBtn) {
+      helpBtn.addEventListener('click', onCakeHelpClick);
+    }
+    renderCakePuzzle();
+  }
+
+  cakePuzzleUrl = CAKE_IMAGE_REMOTE;
+  const probe = new Image();
+  probe.onload = function () {
+    cakePuzzleUrl = 'cake.jpg';
+    startPuzzle();
+  };
+  probe.onerror = function () {
+    startPuzzle();
+  };
+  probe.src = 'cake.jpg';
+}
+
+function openEnvelope(){
+  document.getElementById("env").classList.add("open");
+
+  setTimeout(()=>{
+    next("paper");
+    document.getElementById("paper").classList.add("show");
+    typeLetter();
+  },700);
+}
+
+/* CLOSE LETTER */
+function closeLetter(){
+  const paper = document.getElementById("paper");
+
+  paper.style.opacity = "0";
+  paper.style.transform = "scale(0.8)";
+
+  setTimeout(()=>{
+
+    // go to photo scene
+    next("photo");
+
+    const showcase = document.getElementById("photoShowcase");
+
+    // show photo + Hello Kitty–style frame together
+    setTimeout(()=>{
+      showcase.classList.add("show");
+    },200);
+
+    // hide photo and frame together
+    setTimeout(()=>{  
+      showcase.classList.remove("show");
+
+      // go to final message
+      setTimeout(()=>{
+        next("end");
+
+        setTimeout(()=>{
+          document.getElementById("finalMessage").classList.add("show");
+        },500);
+
+      },800);
+
+    },3000); // how long photo stays (adjust if you want)
+
+  },500);
+}
+
+/* LETTER */
+function typeLetter(){
+const paragraphs = [
+"Happy Birthday!",
+
+"Darling",
+
+"I’ve been thinking about what to say for a while now, and honestly, there’s just so much I want to tell you that it’s hard to put everything into the right words.",
+
+"I wish I could be there with you right now. Not just to say happy birthday, but to actually spend the day with you, to see you smile in person, to just be there beside you even if we’re doing nothing at all.",
+
+"But since I can’t, I wanted to make something instead. Something small, but something real. Something that shows you that even from far away, you still matter to me more than you probably realize.",
+
+"You’ve become someone really important in my life. And I don’t just mean that in a simple way. I mean it in the way where your presence actually changes how my day feels.",
+
+"There are moments when I randomly think about you, and without even realizing it, I just feel lighter. Like somehow, even without trying, you make things better.",
+
+"The way you talk, the way you think, even the little things you probably don’t notice about yourself… they all matter to me.",
+
+"And I know I don’t always say it, or I don’t always express it properly, but I really do appreciate you. A lot more than it probably seems sometimes.",
+
+"You’re someone who makes things feel easier, especially on days when everything else feels off. And that’s not something I take for granted.",
+
+"I’m really glad that I met you. Out of everything that could’ve happened, somehow our paths crossed, and I wouldn’t change that for anything.",
+
+"Even if we’re far apart, I still feel close to you in a way that’s hard to explain. And honestly, that’s something I value a lot.",
+
+"There are times when I wish distance wasn’t a thing. When I could just show up, be there, and spend time with you without thinking about anything else.",
+
+"But even with that distance, I still feel like you’re someone I can hold onto in a way that feels real.",
+
+"You’re not just someone I talk to. You’re someone I care about, someone I appreciate, and someone who genuinely means something to me.",
+
+"And I hope you know that.",
+
+"I hope you know that even in the small moments, even in the simple conversations, you’re already making a difference without even trying.",
+
+"I think one of the things I appreciate the most about you is how natural everything feels when I’m talking to you.",
+
+"It doesn’t feel forced, it doesn’t feel fake, it just feels real, and that’s something rare.",
+
+"And I don’t take that lightly at all.",
+
+"There are times where I sit and just think about how lucky I am that you’re in my life, because not everyone gets to meet someone like you.",
+
+"You’re someone who brings comfort without even trying, and that’s something I don’t think you even realize.",
+
+"You don’t have to do anything special, just being you is already enough.",
+
+"And I hope you never change that.",
+
+"I hope you always stay the way you are, because the way you are is already more than enough.",
+
+"So yeah… happy birthday.",
+
+"I hope today makes you smile, even in the smallest ways.",
+
+"I hope you feel appreciated, not just today but always.",
+
+"And even if I’m not there physically, just know that I’m still here for you.",
+
+"No matter the distance, I’m still with you in my own way.",
+
+"And honestly… I wouldn’t trade that for anything.",
+
+"Always."
+];
+
+let i=0;
+const el=document.getElementById("letterText");
+
+function type(){
+  if(i<paragraphs.length){
+    const p=document.createElement("p");
+    el.appendChild(p);
+
+    let text=paragraphs[i];
+    let j=0;
+
+    function typeLine(){
+      if(j<text.length){
+        p.innerHTML+=text[j++];
+        setTimeout(typeLine,18);
+      }
+    }
+
+    typeLine();
+    i++;
+    setTimeout(type,450);
+  }
+}
+type();
+}
+</script>
+
+</body>
+</html>
